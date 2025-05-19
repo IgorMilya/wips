@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+    box-sizing: border-box
+}
+
+input {
+    outline: none;
+}
+
+@layer components {
+    .loader {
+        border-width: 4px;
+    }
+}
