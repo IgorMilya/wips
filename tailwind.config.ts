@@ -10,7 +10,7 @@ const config: Config = {
   ],
   theme: {
     colors: {
-      primary: '#ebebeb',
+      primary: '#edeff4',
       secondary: '#27044b',
       background: '#fafafa',
       error: '#df0f0f',

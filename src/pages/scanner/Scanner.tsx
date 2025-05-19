@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { Button } from 'UI/index'
-import { useNavigate } from 'react-router-dom'
+import { Button } from 'UI'
 
-function Home() {
+function Scanner() {
   const [networks, setNetworks] = useState<string[]>([])
   async function scanWifi() {
     const result = await invoke<string[]>('scan_wifi')
@@ -27,4 +26,4 @@ function Home() {
   )
 }
 
-export default Home
+export default Scanner

@@ -1,0 +1,1 @@
+export type { LinkItemType } from './LinkItemType'

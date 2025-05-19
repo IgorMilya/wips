@@ -1,12 +1,16 @@
-import { Route, Routes } from 'react-router-dom'
-import { Home } from 'pages'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { Dashboard, HomeLayout, Scanner } from 'pages'
 import { ROUTES } from './routes.utils'
 
 export const AppRouter = () => {
 
   return (
     <Routes>
-      <Route path={ROUTES.HOME} element={<Home />} />
+      <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.DASHBOARD} />} />
+      <Route path={ROUTES.HOME} element={<HomeLayout />}>
+        <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
+        <Route path={ROUTES.SCANNER} element={<Scanner />} />
+      </Route>
     </Routes>
   )
-  }
+}
