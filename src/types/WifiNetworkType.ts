@@ -1,0 +1,8 @@
+export type WifiNetworkType = {
+  ssid: string
+  authentication: string
+  encryption: string
+  bssid: string
+  signal: string
+  risk: string
+}

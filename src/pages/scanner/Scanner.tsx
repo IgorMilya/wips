@@ -1,26 +1,33 @@
-import { useState } from 'react'
+import React, { FC, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { Button } from 'UI'
+import { Button, Table } from 'UI'
+import { tableTitle } from './scanner.utils'
+import { TableScanner } from './table-scanner'
+import { WifiNetworkType } from 'types'
 
-function Scanner() {
-  const [networks, setNetworks] = useState<string[]>([])
+const Scanner: FC = () => {
+  const [networks, setNetworks] = useState<WifiNetworkType[]>([])
   async function scanWifi() {
-    const result = await invoke<string[]>('scan_wifi')
+    const result = await invoke<WifiNetworkType[]>('scan_wifi')
+    console.log(result)
     setNetworks(result)
   }
 
   return (
-    <div style={{ padding: 20 }}>
+    <div className="p-5 w-full">
       <h1>Wireless Intrusion Prevention System</h1>
       <button onClick={scanWifi}>Scan Wi-Fi</button>
-      <div className="w-[100px]">
+      <div className="w-[100px] mb-5 mt-5">
         <Button variant={'secondary'} onClick={scanWifi}>Scan</Button>
       </div>
-      <ul>
-        {networks.map((network, index) => (
-          <li key={index}>{network}</li>
+      <div>
+      <Table tableTitle={tableTitle}>
+        {networks.map((row, index) => (
+          <TableScanner data={row} index={index} key={index} />
         ))}
-
+      </Table>
+      </div>
+      <ul>
       </ul>
     </div>
   )

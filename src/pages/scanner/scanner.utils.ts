@@ -1,0 +1,1 @@
+export const tableTitle: string[] = ["SSID", "Authentication", "Encryption", "BSSID", "Signal", "Risk"]
