@@ -10,12 +10,7 @@ const Navbar: FC<NavbarProps> = ({ data }) => {
 
   return (
     <nav className="bg-secondary h-screen w-[20%] ">
-      {data.map((item) => (
-        <NavItem
-          key={item.link}
-          data={item}
-        />
-      ))}
+      {data.map((item) => <NavItem key={item.link} data={item} />)}
     </nav>
   )
 }

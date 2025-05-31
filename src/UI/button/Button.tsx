@@ -5,9 +5,6 @@ interface ButtonProps extends PropsWithChildren {
   disabled?: boolean,
   onClick?: (e: MouseEvent<HTMLButtonElement>) => void,
   type?: 'submit' | 'button',
-  startIcon?: string,
-  endIcon?: string,
-  linkageToForm?: string
 }
 
 const styleOfVariant = {
@@ -20,24 +17,18 @@ const styleOfVariant = {
 const Button: FC<ButtonProps> = ({
                                    variant,
                                    children,
-                                   startIcon,
-                                   endIcon,
                                    onClick,
                                    disabled,
                                    type,
-                                   linkageToForm,
                                  }) => {
 
   const colorClasses = styleOfVariant[variant]
   return (
     <button
-      form={linkageToForm}
       className={`flex gap-4 items-center w-full p-2.5 text-white font-bold rounded-md focus:outline-none  ${colorClasses} relative`}
       onClick={onClick} disabled={disabled} type={type || 'button'}
     >
-      {startIcon && <img src={startIcon} alt="icon" className="w-8" />}
       {children}
-      {endIcon && <img src={endIcon} alt="icon" className="w-8" />}
     </button>
   )
 }
