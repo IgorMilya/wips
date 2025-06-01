@@ -14,7 +14,7 @@ pub fn calculate_risk(authentication: &str, encryption: &str, signal: &str, ssid
     score += match encryption {
         e if e.contains("CCMP") => 0,
         e if e.contains("TKIP") => 20,
-        e if e.contains("WEP") || e.is_empty() => 50,
+        e if e.contains("WEP") || e.is_empty() || e.contains("None") => 50,
         _ => 10,
     };
 

@@ -3,8 +3,6 @@ use std::process::Command;
 use std::io::Write;
 #[tauri::command]
 pub fn connect_wifi(ssid: String, password: Option<String>) -> Result<String, String> {
-    println!("Connecting to SSID: {}", ssid);
-
     if let Some(pass) = password {
         // New network — generate profile XML
         let profile = generate_profile_xml(&ssid, &pass);

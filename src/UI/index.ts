@@ -1,3 +1,4 @@
 export { Button } from './button'
 export { Navbar } from './navbar'
 export { Table } from './table'
+export { Modal } from './modal'

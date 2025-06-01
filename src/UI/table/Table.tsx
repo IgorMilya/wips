@@ -12,14 +12,14 @@ const Table: FC<TableProps> = ({tableTitle, children, notDataFound}) => {
 
   return (
     <div className="p-4 bg-white rounded-xl text-black">
-      <div className="overflow-x-auto max-h-[500px] min-h-[500px]">
+      <div className="overflow-x-auto max-h-[430px] min-h-[430px]">
         <table className="min-w-full table-auto border-collapse">
           <TableHead tableTitle={tableTitle} />
           <tbody className="text-sm">
           {notDataFound && (
             <tr>
               <td colSpan={6}>
-                <div className="flex items-center justify-center h-[453px] text-gray-500">
+                <div className="flex items-center justify-center h-[382px] text-gray-500">
                   No scanned data
                 </div>
               </td>

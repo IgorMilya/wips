@@ -1,20 +1,21 @@
-import React, { FC, useState } from 'react'
+import React, { FC } from 'react'
 import { WifiNetworkType } from 'types'
 import { invoke } from '@tauri-apps/api/core'
-import { Button } from 'UI'
+import { Button, Modal } from 'UI'
+import { useIsModal } from 'hooks'
 
 
 interface TableScannerProps {
   data: WifiNetworkType,
   index: number,
-  isOpen: boolean,
+  isShowNetwork: boolean,
   onToggle: () => void
   onFetchActiveNetwork: () => void
 }
 
-const TableScanner: FC<TableScannerProps> = ({ data, isOpen, onToggle, onFetchActiveNetwork }) => {
+const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, onFetchActiveNetwork }) => {
   const { bssid, risk, signal, ssid, encryption, authentication } = data
-
+  const { isOpen, handleToggleIsOpenModal } = useIsModal()
   const connectToWifi = async (ssid: string) => {
     const password = prompt(`Enter password for network "${ssid}"\n(Leave blank if it's saved already):`)
     try {
@@ -29,10 +30,14 @@ const TableScanner: FC<TableScannerProps> = ({ data, isOpen, onToggle, onFetchAc
     }
   }
 
+  const handleOpenModal = (ssid: string) => {
+    (risk === 'High' || risk === 'Critical') ? handleToggleIsOpenModal() : connectToWifi(ssid)
+  }
+
   return (
     <>
       <tr onClick={onToggle}
-          className={`border-b border-gray-700 transition hover:bg-[#e3dbdb] text-center ${isOpen && 'bg-[rgba(232,231,231,1)]'}`}>
+          className={`border-b border-gray-700 transition hover:bg-[#e3dbdb] text-center ${isShowNetwork && 'bg-[rgba(232,231,231,1)]'}`}>
         <td className="p-3">{!ssid ? "Hidden Network" : ssid}</td>
         <td className="p-3">{!authentication ? "Hidden Network" :authentication }</td>
         <td className="p-3">{!encryption ? "Hidden Network" : encryption}</td>
@@ -41,15 +46,18 @@ const TableScanner: FC<TableScannerProps> = ({ data, isOpen, onToggle, onFetchAc
         <td className="p-3">{!risk ? "Hidden Network" : risk}</td>
       </tr>
 
-      {isOpen && (
+      {isShowNetwork && (
         <tr className="bg-[rgba(232,231,231,1)]">
           <td colSpan={6} className="p-5">
             <div className="w-[100px]">
-              <Button onClick={() => connectToWifi(ssid)} variant="secondary">Connect</Button>
+              <Button onClick={() => handleOpenModal(ssid)} variant="secondary">Connect</Button>
             </div>
           </td>
         </tr>
       )}
+      <Modal title="Alert" isOpen={isOpen} buttonText="Confirm" onClose={handleToggleIsOpenModal} onConfirm={() => connectToWifi(ssid)}>
+        Risk of this network ({ssid}) is {risk}. Do you really want to connect?
+      </Modal>
     </>
   )
 }

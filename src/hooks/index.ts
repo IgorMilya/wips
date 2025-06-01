@@ -1,0 +1,1 @@
+export { useIsModal } from './useIsModal.hook'
