@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { Dashboard, HomeLayout, Scanner } from 'pages'
+import { Blacklist, Dashboard, HomeLayout, Scanner } from 'pages'
 import { ROUTES } from './routes.utils'
 
 export const AppRouter = () => {
@@ -10,6 +10,7 @@ export const AppRouter = () => {
       <Route path={ROUTES.HOME} element={<HomeLayout />}>
         <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
         <Route path={ROUTES.SCANNER} element={<Scanner />} />
+        <Route path={ROUTES.BLACKLIST} element={<Blacklist />} />
       </Route>
     </Routes>
   )

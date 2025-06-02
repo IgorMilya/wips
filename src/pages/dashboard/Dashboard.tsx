@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { Button } from 'UI'
 
-function Dashboard() {
+const Dashboard = () => {
   const [networks, setNetworks] = useState<string[]>([])
   async function scanWifi() {
     const result = await invoke<string[]>('scan_wifi')

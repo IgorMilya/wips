@@ -1,1 +1,1 @@
-export { loginUser, logoutUser, default as userReducer } from './user.slice'
+export { default as blacklistReducer } from './blacklist.slice'

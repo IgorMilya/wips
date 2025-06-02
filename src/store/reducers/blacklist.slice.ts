@@ -11,7 +11,7 @@ const initialState: userAction = {
   auth: localStorage.getItem("isAuth")
 }
 
-const userSlice = createSlice({
+const blacklistSlice = createSlice({
   name: 'userSlice',
   initialState,
   reducers: {
@@ -26,6 +26,6 @@ const userSlice = createSlice({
   },
 })
 
-export const { loginUser, logoutUser } = userSlice.actions
+export const { loginUser, logoutUser } = blacklistSlice.actions
 
-export default userSlice.reducer
+export default blacklistSlice.reducer

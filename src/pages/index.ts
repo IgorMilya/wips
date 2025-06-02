@@ -1,3 +1,4 @@
 export { HomeLayout } from './home-layout'
+export { Blacklist } from './blacklist'
 export { Dashboard } from './dashboard'
 export { Scanner } from './scanner'

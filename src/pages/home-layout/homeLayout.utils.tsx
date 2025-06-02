@@ -9,4 +9,8 @@ export const navLink: LinkItemType[] = [
     link: '/scanner',
     title: 'Scanner',
   },
+  {
+    link: '/blacklist',
+    title: 'Blacklist',
+  },
 ]
