@@ -1,2 +1,2 @@
 export { api } from './api'
-export { useGetBlacklistQuery } from './blacklist.api'
+export { useGetBlacklistQuery, useAddBlacklistMutation, useDeleteBlacklistMutation } from './blacklist.api'

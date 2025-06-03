@@ -1,9 +1,6 @@
-mod database;
-mod server;
 mod structures;
 mod wifi_functions;
 
-use database::get_blacklist;
 use wifi_functions::{connect_wifi, disconnect_wifi, get_active_network, scan_wifi};
 
 fn main(){
@@ -14,7 +11,6 @@ fn main(){
             connect_wifi,
             get_active_network,
             disconnect_wifi,
-            get_blacklist
         ])
         .run(tauri::generate_context!())
         .expect("error while running Tauri application");
