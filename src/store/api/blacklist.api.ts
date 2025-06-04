@@ -1,10 +1,6 @@
 import { api } from './api'
+import { BlacklistedNetwork } from 'types'
 
-export interface BlacklistedNetwork {
-  id: string
-  ssid: string
-  bssid: string
-}
 
 export const blacklistApi = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -12,7 +8,7 @@ export const blacklistApi = api.injectEndpoints({
       query: () => '/blacklist',
       providesTags: ['Blacklist'],
     }),
-    addBlacklist: builder.mutation<void, { ssid: string; bssid: string }>({
+    addBlacklist: builder.mutation<void, { ssid: string; bssid: string; reason?: string }>({
       query: (body) => ({
         url: '/blacklist',
         method: 'POST',

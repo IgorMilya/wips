@@ -1,0 +1,1 @@
+export const tableBlacklistTitle: string[] = ["SSID", "BSSID", "Added at"]

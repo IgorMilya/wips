@@ -1,13 +1,12 @@
 import React, { FC } from 'react'
 import { WifiNetworkType } from 'types'
 import { invoke } from '@tauri-apps/api/core'
-import { Button, Modal } from 'UI'
+import { Button, Chip, Modal } from 'UI'
 import { useIsModal } from 'hooks'
-import { useAddBlacklistMutation } from 'store/api'  // Import the mutation
+import { useAddBlacklistMutation } from 'store/api'
 
 interface TableScannerProps {
   data: WifiNetworkType,
-  index: number,
   isShowNetwork: boolean,
   onToggle: () => void
   onFetchActiveNetwork: () => void
@@ -42,7 +41,8 @@ const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, on
       return
     }
     try {
-      await addBlacklist({ ssid, bssid }).unwrap()
+      const reason = prompt('Enter reason for blacklisting:') || 'Manually added'
+      await addBlacklist({ ssid, bssid, reason }).unwrap()
       alert(`Network ${ssid} has been added to blacklist`)
     } catch (error) {
       alert('Failed to add network to blacklist: ' + JSON.stringify(error))
@@ -52,20 +52,28 @@ const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, on
   return (
     <>
       <tr onClick={onToggle}
-          className={`border-b border-gray-700 transition hover:bg-[#e3dbdb] text-center ${isShowNetwork ? 'bg-[rgba(232,231,231,1)]' : ''}`}>
+          className={`border-b border-gray-700 text-center hover:bg-gray-100 transition ${isShowNetwork ? 'bg-[rgba(232,231,231,1)]' : ''}`}>
         <td className="p-3">{!ssid ? 'Hidden Network' : ssid}</td>
         <td className="p-3">{!authentication ? 'Hidden Network' : authentication}</td>
         <td className="p-3">{!encryption ? 'Hidden Network' : encryption}</td>
         <td className="p-3">{!bssid ? 'Hidden Network' : bssid}</td>
         <td className="p-3">{!signal ? 'Hidden Network' : signal}</td>
-        <td className="p-3">{!risk ? 'Hidden Network' : risk}</td>
+        <td className="p-3">
+          {!risk ? 'Hidden Network' : <Chip risk={risk} />}
+        </td>
       </tr>
 
       {isShowNetwork && (
         <tr className="bg-[rgba(232,231,231,1)]">
-          <td colSpan={6} className="p-5 flex gap-4 justify-center">
-            <Button onClick={() => handleOpenModal(ssid)} variant="secondary">Connect</Button>
-            <Button onClick={handleBlacklist} variant="secondary" disabled={isAdding}>Blacklist</Button>
+          <td colSpan={6} className="p-5">
+            <div className="flex gap-5">
+              <div className="w-[150px]">
+                <Button onClick={() => handleOpenModal(ssid)} variant="secondary">Connect</Button>
+              </div>
+              <div className="w-[150px]">
+                <Button onClick={handleBlacklist} variant="red" disabled={isAdding}>Blacklist</Button>
+              </div>
+            </div>
           </td>
         </tr>
       )}

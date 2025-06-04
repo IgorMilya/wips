@@ -1,43 +1,32 @@
-import { useGetBlacklistQuery, useDeleteBlacklistMutation } from 'store/api'
+import { useGetBlacklistQuery } from 'store/api'
+import { Table } from 'UI'
+import { tableBlacklistTitle } from './blacklist.utils'
+import { TableBlacklist } from './table-blacklist'
 import { useState } from 'react'
 
 const Blacklist = () => {
   const { data, isLoading, isError, error } = useGetBlacklistQuery()
-  const [deleteBlacklist, { isLoading: isDeleting }] = useDeleteBlacklistMutation()
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
 
-  const handleDelete = async (id: string) => {
-    setDeletingId(id)
-    try {
-      await deleteBlacklist(id).unwrap()
-      alert('Deleted successfully')
-    } catch (err) {
-      alert('Delete failed: ' + JSON.stringify(err))
-    } finally {
-      setDeletingId(null)
-    }
-  }
-
+  const onToggle = (index: number) => setOpenIndex(openIndex === index ? null : index)
   return (
-    <div className="p-5">
+    <div className="p-5 w-full">
       <h1 className="text-xl font-bold mb-4">Blacklist</h1>
-      {isLoading && <p>Loading...</p>}
       {isError && <p className="text-red-500">Error: {String(error)}</p>}
-      {!isLoading && data?.length === 0 && <p>No blacklisted networks found.</p>}
-      <ul>
-        {data?.map(network => (
-          <li key={network.id} className="flex justify-between items-center border-b py-2">
-            <span><strong>{network.ssid}</strong> — {network.bssid}</span>
-            <button
-              className="text-red-600 hover:text-red-800"
-              disabled={deletingId === network.id || isDeleting}
-              onClick={() => handleDelete(network.id)}
-            >
-              {deletingId === network.id ? 'Deleting...' : 'Delete'}
-            </button>
-          </li>
-        ))}
-      </ul>
+      {isLoading ? <p>Loading...</p> : (
+        <Table tableTitle={tableBlacklistTitle} notDataFound={!isLoading && data?.length === 0}>
+          {data?.map((network, index) =>
+            <TableBlacklist
+              isShowNetwork={openIndex === index}
+              onToggle={() => onToggle(index)}
+              key={network.id}
+              network={network}
+            />,
+          )}
+        </Table>
+      )
+      }
+
     </div>
   )
 }

@@ -38,9 +38,9 @@ pub fn calculate_risk(authentication: &str, encryption: &str, signal: &str, ssid
     println!("{}", score);
     // Total score classification
     match score {
-        0..=39 => "Low".to_string(),
-        40..=69 => "Medium".to_string(),
-        70..=89 => "High".to_string(),
-        _ => "Critical".to_string(),
+        0..=39 => "L".to_string(),
+        40..=69 => "M".to_string(),
+        70..=89 => "H".to_string(),
+        _ => "C".to_string(),
     }
 }

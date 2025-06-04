@@ -20,7 +20,7 @@ const Table: FC<TableProps> = ({tableTitle, children, notDataFound}) => {
             <tr>
               <td colSpan={6}>
                 <div className="flex items-center justify-center h-[382px] text-gray-500">
-                  No scanned data
+                  No data
                 </div>
               </td>
             </tr>
