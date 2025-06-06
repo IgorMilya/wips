@@ -8,9 +8,9 @@ interface ButtonProps extends PropsWithChildren {
 }
 
 const styleOfVariant = {
-  primary: 'justify-center bg-primary hover:bg-gray-200 focus:ring-2 focus:ring-gray-300',
-  red: 'justify-center bg-error hover:bg-red-800 focus:ring-2 focus:ring-red-600',
-  secondary: `justify-center bg-secondary hover:bg-purple-900 focus:ring-2 focus:ring-purple-500`,
+  primary: 'justify-center bg-white hover:bg-[#dbbfe3] focus:ring-2 focus:ring-[#dbbfe3] text-black',
+  red: 'justify-center bg-error hover:bg-red-800 focus:ring-2 focus:ring-red-600 text-white',
+  secondary: `justify-center bg-secondary hover:bg-purple-900 focus:ring-2 focus:ring-purple-500 text-white`,
   outline: 'justify-start font-medium',
 }
 
@@ -26,7 +26,7 @@ const Button: FC<ButtonProps> = ({
   const colorClasses = styleOfVariant[variant]
   return (
     <button
-      className={`flex gap-4 items-center w-full  p-2.5 text-white font-bold rounded-md focus:outline-none  ${colorClasses} relative`}
+      className={`flex gap-4 items-center w-full  p-2.5  font-bold rounded-md focus:outline-none  ${colorClasses} relative ${disabled ? 'opacity-50 cursor-not-allowed focus:ring-0' : ''}`}
       onClick={onClick} disabled={disabled} type={type || 'button'}
     >
       {children}

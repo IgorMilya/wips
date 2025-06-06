@@ -1,0 +1,1 @@
+export const tableWhitelistTitle: string[] = ["SSID", "BSSID", "Added at"]

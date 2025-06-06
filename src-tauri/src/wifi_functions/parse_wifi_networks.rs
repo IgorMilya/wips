@@ -46,6 +46,5 @@ pub fn parse_wifi_networks(output: &str, bssid: &str, encryption: &str) -> Vec<W
     for net in networks.iter_mut() {
         net.risk = calculate_risk(&net.authentication, &net.encryption, &net.signal, &net.ssid);
     }
-
     networks
 }

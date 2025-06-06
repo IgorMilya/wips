@@ -1,20 +1,20 @@
 import React, { FC } from 'react'
-import { BlacklistedNetworkType } from 'types'
+import { WhitelistedNetworkType } from 'types'
 import { Button } from 'UI'
-import { useDeleteBlacklistMutation } from 'store/api'
+import { useDeleteWhitelistMutation } from 'store/api'
 
 interface TableBlacklistProps {
-  network: BlacklistedNetworkType
+  network: WhitelistedNetworkType
   isShowNetwork: boolean,
   onToggle: () => void
 }
 
-const TableBlacklist: FC<TableBlacklistProps> = ({ network, isShowNetwork, onToggle }) => {
-  const { id, ssid, bssid, timestamp, reason } = network
-  const [deleteBlacklist, { isLoading: isDeleting }] = useDeleteBlacklistMutation()
+const TableWhitelist: FC<TableBlacklistProps> = ({ network, isShowNetwork, onToggle }) => {
+  const { id, ssid, bssid, timestamp } = network
+  const [deleteWhitelist, { isLoading: isDeleting }] = useDeleteWhitelistMutation()
   const handleDelete = async (id: string) => {
     try {
-      await deleteBlacklist(id).unwrap()
+      await deleteWhitelist(id).unwrap()
       alert('Deleted successfully')
     } catch (err) {
       alert('Delete failed: ' + JSON.stringify(err))
@@ -30,14 +30,10 @@ const TableBlacklist: FC<TableBlacklistProps> = ({ network, isShowNetwork, onTog
       {isShowNetwork && (
         <tr className="bg-[rgba(232,231,231,1)]">
           <td colSpan={3} className="p-5">
-            <div className="">
-              <h1 className="font-bold">Reason:</h1>
-              <p>{reason}</p>
               <div className="w-[150px] mt-5">
                 <Button variant="red" disabled={isDeleting} onClick={() => handleDelete(id)}>
                   {isDeleting ? 'Deleting...' : 'Delete'}
                 </Button></div>
-            </div>
           </td>
         </tr>
       )}
@@ -45,4 +41,4 @@ const TableBlacklist: FC<TableBlacklistProps> = ({ network, isShowNetwork, onTog
   )
 }
 
-export default TableBlacklist
+export default TableWhitelist

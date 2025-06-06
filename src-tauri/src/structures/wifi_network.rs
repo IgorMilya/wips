@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct WifiNetwork {
     pub(crate) ssid: String,
     pub(crate) authentication: String,

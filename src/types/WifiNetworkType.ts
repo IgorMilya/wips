@@ -4,5 +4,5 @@ export type WifiNetworkType = {
   encryption: string
   bssid: string
   signal: string
-  risk: string
+  risk: "L" | "M" | "H" | "C" | "WL"
 }

@@ -1,3 +1,4 @@
 export type { LinkItemType } from './LinkItemType'
 export type { WifiNetworkType } from './WifiNetworkType'
-export type { BlacklistedNetwork } from './BlacklistNetwork'
+export type { BlacklistedNetworkType } from './BlacklistNetworkType'
+export type { WhitelistedNetworkType } from './WhitelistNetworkType'

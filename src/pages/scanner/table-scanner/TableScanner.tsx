@@ -3,7 +3,7 @@ import { WifiNetworkType } from 'types'
 import { invoke } from '@tauri-apps/api/core'
 import { Button, Chip, Modal } from 'UI'
 import { useIsModal } from 'hooks'
-import { useAddBlacklistMutation } from 'store/api'
+import { useAddBlacklistMutation, useAddWhitelistMutation } from 'store/api'
 
 interface TableScannerProps {
   data: WifiNetworkType,
@@ -16,6 +16,7 @@ const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, on
   const { bssid, risk, signal, ssid, encryption, authentication } = data
   const { isOpen, handleToggleIsOpenModal } = useIsModal()
   const [addBlacklist, { isLoading: isAdding }] = useAddBlacklistMutation()
+  const [addWhitelist, { isLoading: isAddingWhitelist }] = useAddWhitelistMutation()
 
   const connectToWifi = async (ssid: string) => {
     const password = prompt(`Enter password for network "${ssid}"\n(Leave blank if it's saved already):`)
@@ -32,10 +33,10 @@ const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, on
   }
 
   const handleOpenModal = (ssid: string) => {
-    (risk === 'High' || risk === 'Critical') ? handleToggleIsOpenModal() : connectToWifi(ssid)
+    (risk === 'H' || risk === 'C') ? handleToggleIsOpenModal() : connectToWifi(ssid)
   }
 
-  const handleBlacklist = async () => {
+  const handleBlacklist = async (ssid: string, bssid: string) => {
     if (!ssid || !bssid) {
       alert('Cannot blacklist a hidden network without SSID or BSSID')
       return
@@ -49,6 +50,19 @@ const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, on
     }
   }
 
+  const handleWhitelist = async (ssid: string, bssid: string) => {
+    if (!ssid || !bssid) {
+      alert('Cannot whitelist a hidden network without SSID or BSSID')
+      return
+    }
+    try {
+      await addWhitelist({ ssid, bssid }).unwrap()
+      alert(`Network ${ssid} has been added to whitelist`)
+    } catch (error) {
+      alert('Failed to add network to whitelist: ' + JSON.stringify(error))
+    }
+  }
+
   return (
     <>
       <tr onClick={onToggle}
@@ -58,9 +72,7 @@ const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, on
         <td className="p-3">{!encryption ? 'Hidden Network' : encryption}</td>
         <td className="p-3">{!bssid ? 'Hidden Network' : bssid}</td>
         <td className="p-3">{!signal ? 'Hidden Network' : signal}</td>
-        <td className="p-3">
-          {!risk ? 'Hidden Network' : <Chip risk={risk} />}
-        </td>
+        <td className="p-3"><Chip risk={risk} /></td>
       </tr>
 
       {isShowNetwork && (
@@ -71,7 +83,12 @@ const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, on
                 <Button onClick={() => handleOpenModal(ssid)} variant="secondary">Connect</Button>
               </div>
               <div className="w-[150px]">
-                <Button onClick={handleBlacklist} variant="red" disabled={isAdding}>Blacklist</Button>
+                <Button onClick={() => handleBlacklist(ssid, bssid)} variant="red"
+                        disabled={isAdding || risk === "WL"}>Blacklist</Button>
+              </div>
+              <div className="w-[150px]">
+                <Button onClick={() => handleWhitelist(ssid, bssid)} variant="primary"
+                        disabled={isAddingWhitelist}>Whitelist</Button>
               </div>
             </div>
           </td>

@@ -3,4 +3,5 @@ export const ROUTES ={
   DASHBOARD: "/dashboard",
   SCANNER: "/scanner",
   BLACKLIST: "/blacklist",
+  WHITELIST: "/whitelist",
 }

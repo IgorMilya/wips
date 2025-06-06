@@ -1,10 +1,10 @@
 import { api } from './api'
-import { BlacklistedNetwork } from 'types'
+import { BlacklistedNetworkType } from 'types'
 
 
-export const blacklistApi = api.injectEndpoints({
+const blacklistApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    getBlacklist: builder.query<BlacklistedNetwork[], void>({
+    getBlacklist: builder.query<BlacklistedNetworkType[], void>({
       query: () => '/blacklist',
       providesTags: ['Blacklist'],
     }),

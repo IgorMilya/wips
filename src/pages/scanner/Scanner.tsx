@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { Button, Table } from 'UI'
-import { useGetBlacklistQuery } from 'store/api'
+import { Button, Chip, Table } from 'UI'
+import { useGetBlacklistQuery, useGetWhitelistQuery } from 'store/api'
 import { WifiNetworkType } from 'types'
 import { TableScanner } from './table-scanner'
 import { tableTitle } from './scanner.utils'
@@ -12,6 +12,7 @@ const Scanner: FC = () => {
   const [activeNetwork, setActiveNetwork] = useState<WifiNetworkType | null>(null)
   const [isActive, setIsActive] = useState(false)
   const { data: blacklist = [] } = useGetBlacklistQuery()
+  const { data: whitelist = [] } = useGetWhitelistQuery()
 
   const scanWifi = async () => {
     const result = await invoke<WifiNetworkType[]>('scan_wifi')
@@ -50,6 +51,13 @@ const Scanner: FC = () => {
         item.bssid !== activeNetwork?.bssid &&
         !blacklist.some(bl => bl.bssid.toLowerCase() === item.bssid.toLowerCase()),
       )
+      .map(item => ({
+        ...item,
+        risk: whitelist.some(wl => wl.bssid.toLowerCase() === item.bssid.toLowerCase())
+          ? 'WL'
+          : item.risk,
+      }))
+
 
 
   return (
@@ -71,7 +79,7 @@ const Scanner: FC = () => {
             <div className="bg-[rgb(70,8,118)] text-white p-5 rounded-b shadow absolute top-[72px] left-0 z-10">
               <p className="font-bold">BSSID: <span className="font-normal">{activeNetwork.bssid}</span></p>
               <p className="font-bold">Signal: <span className="font-normal">{activeNetwork.signal}</span></p>
-              <p className="font-bold">Risk: <span className="font-normal">{activeNetwork.risk}</span></p>
+              <p className="font-bold">Risk:  <Chip risk={activeNetwork.risk} /></p>
               <p className="font-bold">Authentication: <span
                 className="font-normal">{activeNetwork.authentication}</span>
               </p>
