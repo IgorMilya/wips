@@ -5,4 +5,5 @@ export type WifiNetworkType = {
   bssid: string
   signal: string
   risk: "L" | "M" | "H" | "C" | "WL"
+  is_evil_twin: boolean
 }

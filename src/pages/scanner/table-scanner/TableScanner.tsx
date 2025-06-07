@@ -13,7 +13,7 @@ interface TableScannerProps {
 }
 
 const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, onFetchActiveNetwork }) => {
-  const { bssid, risk, signal, ssid, encryption, authentication } = data
+  const { bssid, risk, signal, ssid, encryption, authentication, is_evil_twin } = data
   const { isOpen, handleToggleIsOpenModal } = useIsModal()
   const [addBlacklist, { isLoading: isAdding }] = useAddBlacklistMutation()
   const [addWhitelist, { isLoading: isAddingWhitelist }] = useAddWhitelistMutation()
@@ -25,6 +25,7 @@ const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, on
       const result = await invoke<string>('connect_wifi', {
         ssid,
         password: null,
+        authentication: authentication,
       })
       alert(result)
       onFetchActiveNetwork()
@@ -49,6 +50,7 @@ const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, on
           const retry = await invoke<string>('connect_wifi', {
             ssid,
             password,
+            authentication: authentication
           })
           alert(retry)
           onFetchActiveNetwork()
@@ -62,7 +64,6 @@ const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, on
       setIsConnecting(false)
     }
   }
-
 
 
   const handleOpenModal = (ssid: string) => {
@@ -100,12 +101,21 @@ const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, on
     <>
       <tr onClick={onToggle}
           className={`border-b border-gray-700 text-center hover:bg-gray-100 transition ${isShowNetwork ? 'bg-[rgba(232,231,231,1)]' : ''}`}>
-        <td className="p-3">{!ssid ? 'Hidden Network' : ssid}</td>
+        <td className="p-3">
+          {!ssid ? 'Hidden Network' : (
+            <>
+              {ssid}
+              {is_evil_twin && risk !== "WL" && <span className="ml-2 text-red-600 font-bold">(Evil Twin)</span>}
+            </>
+          )}
+        </td>
         <td className="p-3">{!authentication ? 'Hidden Network' : authentication}</td>
         <td className="p-3">{!encryption ? 'Hidden Network' : encryption}</td>
         <td className="p-3">{!bssid ? 'Hidden Network' : bssid}</td>
         <td className="p-3">{!signal ? 'Hidden Network' : signal}</td>
         <td className="p-3"><Chip risk={risk} /></td>
+
+
       </tr>
 
       {isShowNetwork && (
@@ -128,7 +138,7 @@ const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, on
               </div>
               <div className="w-[150px]">
                 <Button onClick={() => handleWhitelist(ssid, bssid)} variant="primary"
-                        disabled={isAddingWhitelist}>Whitelist</Button>
+                        disabled={isAddingWhitelist || risk === "WL"}>Whitelist</Button>
               </div>
             </div>
           </td>

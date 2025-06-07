@@ -9,12 +9,13 @@ import { load } from '@tauri-apps/plugin-store'
 
 const Scanner: FC = () => {
   const [networks, setNetworks] = useState<WifiNetworkType[]>([])
-  const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const [localWhitelist, setLocalWhitelist] = useState<string[]>([])
+  const [localBlacklist, setLocalBlacklist] = useState<string[]>([])
   const [activeNetwork, setActiveNetwork] = useState<WifiNetworkType | null>(null)
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
   const [isActive, setIsActive] = useState(false)
   const { data: blacklist = [] } = useGetBlacklistQuery()
   const { data: whitelist = [] } = useGetWhitelistQuery()
-  const [localWhitelist, setLocalWhitelist] = useState<string[]>([])
 
   const scanWifi = async () => {
     const result = await invoke<WifiNetworkType[]>('scan_wifi')
@@ -40,17 +41,32 @@ const Scanner: FC = () => {
 
   // Sync backend whitelist to Tauri Store
   const syncWhitelistToStore = async () => {
-    const store = await load('store.json', { autoSave: false })
+    const store = await load('whitelist.json', { autoSave: false })
     const bssidList = whitelist.map(wl => wl.bssid.toLowerCase())
     await store.set('whitelist_bssids', bssidList)
     await store.save()
     setLocalWhitelist(bssidList)
   }
 
+  const syncBlacklistToStore = async () => {
+    const store = await load('blacklist.json', { autoSave: false })
+    const bssidList = blacklist.map(bl => bl.bssid.toLowerCase())
+    await store.set('blacklist_bssids', bssidList)
+    await store.save()
+    setLocalBlacklist(bssidList)
+  }
+
+
   const loadWhitelistFromStore = async () => {
-    const store = await load('store.json', { autoSave: false })
+    const store = await load('whitelist.json', { autoSave: false })
     const val = await store.get<string[]>('whitelist_bssids') || []
     setLocalWhitelist(val.map(v => v.toLowerCase()))
+  }
+
+  const loadBlacklistFromStore = async () => {
+    const store = await load('blacklist.json', { autoSave: false })
+    const val = await store.get<string[]>('blacklist_bssids') || []
+    setLocalBlacklist(val.map(v => v.toLowerCase()))
   }
 
   const disconnect = async (e: React.MouseEvent) => {
@@ -68,25 +84,35 @@ const Scanner: FC = () => {
 
   useEffect(() => {
     loadWhitelistFromStore()
+    loadBlacklistFromStore()
     fetchActiveNetwork()
+    syncWhitelistToStore()
+    syncBlacklistToStore()
   }, [])
 
   useEffect(() => {
-    if (whitelist.length) {
+    if (!!whitelist.length) {
       syncWhitelistToStore()
     }
   }, [whitelist])
+
+  useEffect(() => {
+    if (!!blacklist.length) {
+      syncBlacklistToStore()
+    }
+  }, [blacklist])
 
   const filterOnActiveNetwork = () =>
     networks
       .filter(item =>
         item.bssid !== activeNetwork?.bssid &&
-        !blacklist.some(bl => bl.bssid.toLowerCase() === item.bssid.toLowerCase()),
+        !localBlacklist.includes(item.bssid.toLowerCase()),
       )
       .map(item => ({
         ...item,
         risk: localWhitelist.includes(item.bssid.toLowerCase()) ? 'WL' : item.risk,
       }))
+
 
   return (
     <div className="p-5 w-full">

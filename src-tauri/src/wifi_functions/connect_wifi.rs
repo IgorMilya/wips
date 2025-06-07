@@ -5,7 +5,9 @@ use std::thread;
 use std::time::Duration;
 
 #[tauri::command]
-pub fn connect_wifi(ssid: String, password: Option<String>) -> Result<String, String> {
+pub fn connect_wifi(ssid: String, password: Option<String>, authentication: Option<String>) -> Result<String, String> {
+    let is_open = authentication.as_deref() == Some("Open");
+
     let known_profiles_output = Command::new("netsh")
         .args(["wlan", "show", "profiles"])
         .output()
@@ -33,9 +35,13 @@ pub fn connect_wifi(ssid: String, password: Option<String>) -> Result<String, St
     }
 
     // Step 3: If not known or previous connection failed, and password is provided
-    let pass =
-        password.ok_or_else(|| "Password is required for new or failed networks.".to_string())?;
-    let profile = generate_profile_xml(&ssid, &pass);
+    let profile = if is_open {
+        generate_open_profile_xml(&ssid)
+    } else {
+        let pass = password.ok_or_else(|| "Password is required for secured networks.".to_string())?;
+        generate_profile_xml(&ssid, &pass)
+    };
+    
     let path = std::env::temp_dir().join("wifi_profile.xml");
 
     let mut file = File::create(&path).map_err(|e| format!("Failed to create XML file: {}", e))?;
@@ -161,6 +167,32 @@ fn generate_profile_xml(ssid: &str, password: &str) -> String {
 </WLANProfile>"#
     )
 }
+
+fn generate_open_profile_xml(ssid: &str) -> String {
+    format!(
+        r#"<?xml version="1.0"?>
+<WLANProfile xmlns="http://www.microsoft.com/networking/WLAN/profile/v1">
+  <name>{ssid}</name>
+  <SSIDConfig>
+    <SSID>
+      <name>{ssid}</name>
+    </SSID>
+  </SSIDConfig>
+  <connectionType>ESS</connectionType>
+  <connectionMode>manual</connectionMode>
+  <MSM>
+    <security>
+      <authEncryption>
+        <authentication>open</authentication>
+        <encryption>none</encryption>
+        <useOneX>false</useOneX>
+      </authEncryption>
+    </security>
+  </MSM>
+</WLANProfile>"#
+    )
+}
+
 
 struct ConnectResult {
     success: bool,

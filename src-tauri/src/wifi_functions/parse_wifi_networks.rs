@@ -22,6 +22,7 @@ pub fn parse_wifi_networks(output: &str, bssid: &str, encryption: &str) -> Vec<W
                 bssid: String::new(),
                 signal: String::new(),
                 risk: String::new(),
+                is_evil_twin: false,
             });
         } else if let Some(network) = current_network.as_mut() {
             if line.trim().to_string().starts_with("Authentication") {

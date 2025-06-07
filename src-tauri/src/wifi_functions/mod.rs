@@ -4,6 +4,7 @@ mod disconnect_wifi;
 mod get_active_network;
 mod parse_wifi_networks;
 mod scan_wifi;
+mod evil_twin_detection;
 
 pub use connect_wifi::connect_wifi;
 pub use disconnect_wifi::disconnect_wifi;
