@@ -5,6 +5,7 @@ import { useGetBlacklistQuery, useGetWhitelistQuery } from 'store/api'
 import { WifiNetworkType } from 'types'
 import { TableScanner } from './table-scanner'
 import { tableTitle } from './scanner.utils'
+import { load } from '@tauri-apps/plugin-store'
 
 const Scanner: FC = () => {
   const [networks, setNetworks] = useState<WifiNetworkType[]>([])
@@ -13,20 +14,43 @@ const Scanner: FC = () => {
   const [isActive, setIsActive] = useState(false)
   const { data: blacklist = [] } = useGetBlacklistQuery()
   const { data: whitelist = [] } = useGetWhitelistQuery()
+  const [localWhitelist, setLocalWhitelist] = useState<string[]>([])
 
   const scanWifi = async () => {
     const result = await invoke<WifiNetworkType[]>('scan_wifi')
     setNetworks(result)
   }
+
   const onToggle = (index: number) => setOpenIndex(openIndex === index ? null : index)
 
   const fetchActiveNetwork = async () => {
     try {
       const result = await invoke<WifiNetworkType[] | null>('get_active_network')
-      setActiveNetwork(result?.[0] ?? null)
+      let network = result?.[0] ?? null
+
+      if (network && localWhitelist.includes(network.bssid.toLowerCase())) {
+        network = { ...network, risk: 'WL' }
+      }
+
+      setActiveNetwork(network)
     } catch (error) {
       console.error('Failed to get active network', error)
     }
+  }
+
+  // Sync backend whitelist to Tauri Store
+  const syncWhitelistToStore = async () => {
+    const store = await load('store.json', { autoSave: false })
+    const bssidList = whitelist.map(wl => wl.bssid.toLowerCase())
+    await store.set('whitelist_bssids', bssidList)
+    await store.save()
+    setLocalWhitelist(bssidList)
+  }
+
+  const loadWhitelistFromStore = async () => {
+    const store = await load('store.json', { autoSave: false })
+    const val = await store.get<string[]>('whitelist_bssids') || []
+    setLocalWhitelist(val.map(v => v.toLowerCase()))
   }
 
   const disconnect = async (e: React.MouseEvent) => {
@@ -39,11 +63,19 @@ const Scanner: FC = () => {
       alert('Failed to disconnect')
     }
   }
+
   const onIsActive = () => setIsActive(!isActive)
 
   useEffect(() => {
+    loadWhitelistFromStore()
     fetchActiveNetwork()
   }, [])
+
+  useEffect(() => {
+    if (whitelist.length) {
+      syncWhitelistToStore()
+    }
+  }, [whitelist])
 
   const filterOnActiveNetwork = () =>
     networks
@@ -53,12 +85,8 @@ const Scanner: FC = () => {
       )
       .map(item => ({
         ...item,
-        risk: whitelist.some(wl => wl.bssid.toLowerCase() === item.bssid.toLowerCase())
-          ? 'WL'
-          : item.risk,
+        risk: localWhitelist.includes(item.bssid.toLowerCase()) ? 'WL' : item.risk,
       }))
-
-
 
   return (
     <div className="p-5 w-full">
@@ -102,8 +130,6 @@ const Scanner: FC = () => {
           ))}
         </Table>
       </div>
-      <ul>
-      </ul>
     </div>
   )
 }

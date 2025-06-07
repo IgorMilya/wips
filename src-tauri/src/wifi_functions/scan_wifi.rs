@@ -1,6 +1,6 @@
-use std::process::Command;
 use crate::structures::WifiNetwork;
 use crate::wifi_functions::parse_wifi_networks::parse_wifi_networks;
+use std::process::Command;
 
 #[tauri::command]
 pub fn scan_wifi() -> Vec<WifiNetwork> {

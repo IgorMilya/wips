@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import { WifiNetworkType } from 'types'
 import { invoke } from '@tauri-apps/api/core'
 import { Button, Chip, Modal } from 'UI'
@@ -17,20 +17,53 @@ const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, on
   const { isOpen, handleToggleIsOpenModal } = useIsModal()
   const [addBlacklist, { isLoading: isAdding }] = useAddBlacklistMutation()
   const [addWhitelist, { isLoading: isAddingWhitelist }] = useAddWhitelistMutation()
+  const [isConnecting, setIsConnecting] = useState(false)
 
   const connectToWifi = async (ssid: string) => {
-    const password = prompt(`Enter password for network "${ssid}"\n(Leave blank if it's saved already):`)
+    setIsConnecting(true)
     try {
       const result = await invoke<string>('connect_wifi', {
         ssid,
-        password: password || null,
+        password: null,
       })
       alert(result)
       onFetchActiveNetwork()
+      console.log("result", result)
     } catch (error: any) {
-      alert(error)
+      const errMessage = typeof error === 'string' ? error : error.toString()
+      console.log("errMessage", errMessage)
+
+      const shouldPrompt =
+        errMessage.includes('Password may have changed') ||
+        errMessage.includes('Password is required for new or failed networks.') ||
+        errMessage.toLowerCase().includes('unable to connect')
+
+      if (shouldPrompt) {
+        const password = prompt(`Connection failed. Enter new password for "${ssid}":`)
+        if (!password) {
+          alert('Password is required to connect.')
+          return
+        }
+
+        try {
+          const retry = await invoke<string>('connect_wifi', {
+            ssid,
+            password,
+          })
+          alert(retry)
+          onFetchActiveNetwork()
+        } catch (finalError: any) {
+          alert('Still failed to connect: ' + finalError)
+        }
+      } else {
+        alert('Connection failed: ' + errMessage)
+      }
+    } finally {
+      setIsConnecting(false)
     }
   }
+
+
 
   const handleOpenModal = (ssid: string) => {
     (risk === 'H' || risk === 'C') ? handleToggleIsOpenModal() : connectToWifi(ssid)
@@ -80,7 +113,14 @@ const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, on
           <td colSpan={6} className="p-5">
             <div className="flex gap-5">
               <div className="w-[150px]">
-                <Button onClick={() => handleOpenModal(ssid)} variant="secondary">Connect</Button>
+                <Button
+                  onClick={() => handleOpenModal(ssid)}
+                  variant="secondary"
+                  disabled={isConnecting}
+                >
+                  {isConnecting ? 'Connecting...' : 'Connect'}
+                </Button>
+
               </div>
               <div className="w-[150px]">
                 <Button onClick={() => handleBlacklist(ssid, bssid)} variant="red"

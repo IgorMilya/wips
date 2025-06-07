@@ -11,7 +11,7 @@ const Chip: FC<ChipProps> = ({ risk }) => {
     M: 'text-yellow-600 border-yellow-600',
     H: 'text-orange-600 border-orange-600',
     C: 'text-red-600 border-red-600',
-    WL: 'text-black border-black'
+    WL: 'text-black border-black bg-white'
   }
   const riskStyle = styles[risk as keyof typeof styles] || 'text-gray-600 border-gray-600'
 

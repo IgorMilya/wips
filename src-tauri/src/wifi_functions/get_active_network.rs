@@ -1,7 +1,7 @@
 use crate::structures::WifiNetwork;
+use crate::wifi_functions::parse_wifi_networks::parse_wifi_networks;
 use serde::Serialize;
 use std::process::Command;
-use crate::wifi_functions::parse_wifi_networks::parse_wifi_networks;
 
 #[derive(Serialize)]
 pub struct ActiveNetwork {
@@ -21,7 +21,3 @@ pub fn get_active_network() -> Vec<WifiNetwork> {
 
     parse_wifi_networks(&result, "AP BSSID", "Cipher")
 }
-
-
-
-
