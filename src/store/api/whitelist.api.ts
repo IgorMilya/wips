@@ -4,10 +4,21 @@ import { WhitelistedNetworkType } from 'types'
 
 const whitelistApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    getWhitelist: builder.query<WhitelistedNetworkType[], void>({
-      query: () => '/whitelist',
+    getWhitelist: builder.query<WhitelistedNetworkType[], { ssid?: string; date?: string } | void>({
+      query: (params) => {
+        let queryString = ''
+        if (params) {
+          const urlParams = new URLSearchParams()
+          if (params.ssid) urlParams.append('ssid', params.ssid)
+          if (params.date) urlParams.append('date', params.date)
+          queryString = `?${urlParams.toString()}`
+        }
+
+        return `/whitelist${queryString}`
+      },
       providesTags: ['Whitelist'],
     }),
+
     addWhitelist: builder.mutation<void, { ssid: string; bssid: string }>({
       query: (body) => ({
         url: '/whitelist',

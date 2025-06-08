@@ -4,8 +4,18 @@ import { BlacklistedNetworkType } from 'types'
 
 const blacklistApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    getBlacklist: builder.query<BlacklistedNetworkType[], void>({
-      query: () => '/blacklist',
+    getBlacklist: builder.query<BlacklistedNetworkType[], { ssid?: string; date?: string } | void>({
+      query: (params) => {
+        let queryString = ''
+        if (params) {
+          const urlParams = new URLSearchParams()
+          if (params.ssid) urlParams.append('ssid', params.ssid)
+          if (params.date) urlParams.append('date', params.date)
+          queryString = `?${urlParams.toString()}`
+        }
+
+        return `/blacklist${queryString}`
+      },
       providesTags: ['Blacklist'],
     }),
     addBlacklist: builder.mutation<void, { ssid: string; bssid: string; reason?: string }>({

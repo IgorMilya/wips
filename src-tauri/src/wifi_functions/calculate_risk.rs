@@ -35,7 +35,6 @@ pub fn calculate_risk(authentication: &str, encryption: &str, signal: &str, ssid
     {
         score += 30;
     }
-    println!("{}", score);
     // Total score classification
     match score {
         0..=39 => "L".to_string(),

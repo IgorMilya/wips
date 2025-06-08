@@ -11,6 +11,7 @@ const Scanner: FC = () => {
   const [networks, setNetworks] = useState<WifiNetworkType[]>([])
   const [localWhitelist, setLocalWhitelist] = useState<string[]>([])
   const [localBlacklist, setLocalBlacklist] = useState<string[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [activeNetwork, setActiveNetwork] = useState<WifiNetworkType | null>(null)
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const [isActive, setIsActive] = useState(false)
@@ -106,12 +107,22 @@ const Scanner: FC = () => {
     networks
       .filter(item =>
         item.bssid !== activeNetwork?.bssid &&
-        !localBlacklist.includes(item.bssid.toLowerCase()),
+        !localBlacklist.includes(item.bssid.toLowerCase())
       )
       .map(item => ({
         ...item,
         risk: localWhitelist.includes(item.bssid.toLowerCase()) ? 'WL' : item.risk,
       }))
+      .filter(item => {
+        const term = searchTerm.toLowerCase()
+        return (
+          item.ssid?.toLowerCase().includes(term) ||
+          item.authentication?.toLowerCase().includes(term) ||
+          item.encryption?.toLowerCase().includes(term) ||
+          item.risk?.toLowerCase().includes(term)
+        )
+      })
+
 
 
   return (
@@ -144,6 +155,15 @@ const Scanner: FC = () => {
       <div className="w-[100px] mb-5 mt-5">
         <Button variant="secondary" onClick={scanWifi}>Scan</Button>
       </div>
+      <div className="mb-4">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search by SSID, Encryption, Authentication, or Risk"
+          className="px-4 py-2 rounded w-full border border-gray-300 focus:outline-none focus:ring focus:border-blue-400"
+        />
+      </div>
       <div>
         <Table tableTitle={tableTitle} notDataFound={!networks.length}>
           {filterOnActiveNetwork()?.map((row, index) => (
@@ -152,7 +172,8 @@ const Scanner: FC = () => {
               isShowNetwork={openIndex === index}
               onToggle={() => onToggle(index)}
               onFetchActiveNetwork={fetchActiveNetwork}
-              data={row}/>
+              data={row}
+            />
           ))}
         </Table>
       </div>

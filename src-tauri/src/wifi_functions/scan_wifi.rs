@@ -13,5 +13,7 @@ pub fn scan_wifi() -> Vec<WifiNetwork> {
 
     let mut networks = parse_wifi_networks(&result, "BSSID", "Encryption");
     mark_evil_twins(&mut networks);
+    
     networks
 }
+
