@@ -22,8 +22,7 @@ To install WIPS, follow these steps:
 
 1. **Clone the repository**  
    ```bash
-   git clone [https://github.com/IgorMilya/wips.git](https://github.com/IgorMilya/wips.git)
-   cd cerberus
+   git clone https://github.com/IgorMilya/wips.git
    ```
 2. **Navigate to the project directory for UI**  
    ```bash
