@@ -1,7 +1,7 @@
 use crate::structures::WifiNetwork;
-use crate::wifi_functions::parse_wifi_networks::parse_wifi_networks;
 use serde::Serialize;
 use std::process::Command;
+use crate::wifi_functions::parse_active_interface::parse_active_interface;
 
 #[derive(Serialize)]
 pub struct ActiveNetwork {
@@ -18,6 +18,7 @@ pub fn get_active_network() -> Vec<WifiNetwork> {
         .expect("Failed to execute command");
 
     let result = String::from_utf8_lossy(&output.stdout);
-
-    parse_wifi_networks(&result, "AP BSSID", "Cipher")
+    println!("{}", result);
+    let res = parse_active_interface(&result);
+    res
 }

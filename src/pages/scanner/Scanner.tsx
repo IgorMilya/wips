@@ -17,6 +17,17 @@ const Scanner: FC = () => {
   const [isActive, setIsActive] = useState(false)
   const { data: blacklist = [] } = useGetBlacklistQuery()
   const { data: whitelist = [] } = useGetWhitelistQuery()
+  const [activeRiskFilter, setActiveRiskFilter] = useState<string | null>(null)
+
+  const RISK_CHIPS = ['Critical', 'High', 'Medium', 'Low', 'Whitelisted']
+  const riskKeywordMap: Record<string, string> = {
+    critical: 'C',
+    high: 'H',
+    medium: 'M',
+    low: 'L',
+    whitelist: 'WL',
+    whitelisted: 'WL',
+  }
 
   const scanWifi = async () => {
     const result = await invoke<WifiNetworkType[]>('scan_wifi')
@@ -103,25 +114,35 @@ const Scanner: FC = () => {
     }
   }, [blacklist])
 
-  const filterOnActiveNetwork = () =>
-    networks
+  const filterOnActiveNetwork = () => {
+    const term = searchTerm.toLowerCase()
+    const mappedRisk = riskKeywordMap[term] ?? null
+    const chipMappedRisk = activeRiskFilter ? riskKeywordMap[activeRiskFilter.toLowerCase()] : null
+
+    return networks
       .filter(item =>
         item.bssid !== activeNetwork?.bssid &&
-        !localBlacklist.includes(item.bssid.toLowerCase())
+        !localBlacklist.includes(item.bssid.toLowerCase()),
       )
       .map(item => ({
         ...item,
         risk: localWhitelist.includes(item.bssid.toLowerCase()) ? 'WL' : item.risk,
       }))
       .filter(item => {
-        const term = searchTerm.toLowerCase()
-        return (
+        if (chipMappedRisk && item.risk !== chipMappedRisk) return false
+
+        if (!term) return true
+
+        const matchesRisk = mappedRisk ? item.risk?.toLowerCase() === mappedRisk.toLowerCase() : false
+        const matchesText =
           item.ssid?.toLowerCase().includes(term) ||
           item.authentication?.toLowerCase().includes(term) ||
           item.encryption?.toLowerCase().includes(term) ||
-          item.risk?.toLowerCase().includes(term)
-        )
+          item.bssid?.toLowerCase().includes(term)
+
+        return matchesRisk || matchesText
       })
+  }
 
 
 
@@ -144,7 +165,7 @@ const Scanner: FC = () => {
             <div className="bg-[rgb(70,8,118)] text-white p-5 rounded-b shadow absolute top-[72px] left-0 z-10">
               <p className="font-bold">BSSID: <span className="font-normal">{activeNetwork.bssid}</span></p>
               <p className="font-bold">Signal: <span className="font-normal">{activeNetwork.signal}</span></p>
-              <p className="font-bold">Risk:  <Chip risk={activeNetwork.risk} /></p>
+              <p className="font-bold">Risk: <Chip risk={activeNetwork.risk} /></p>
               <p className="font-bold">Authentication: <span
                 className="font-normal">{activeNetwork.authentication}</span>
               </p>
@@ -163,6 +184,27 @@ const Scanner: FC = () => {
           placeholder="Search by SSID, Encryption, Authentication, or Risk"
           className="px-4 py-2 rounded w-full border border-gray-300 focus:outline-none focus:ring focus:border-blue-400"
         />
+      </div>
+      <div className="flex gap-2 mb-5 flex-wrap">
+        <button
+          onClick={() => setActiveRiskFilter(null)}
+          className={`px-3 py-1 rounded-full text-sm border ${
+            activeRiskFilter === null ? 'bg-secondary text-white' : 'bg-white text-gray-800'
+          }`}
+        >
+          All
+        </button>
+        {RISK_CHIPS.map(risk => (
+          <button
+            key={risk}
+            onClick={() => setActiveRiskFilter(risk)}
+            className={`px-3 py-1 rounded-full text-sm border ${
+              activeRiskFilter === risk ? 'bg-secondary text-white' : 'bg-white text-gray-800'
+            }`}
+          >
+            {risk}
+          </button>
+        ))}
       </div>
       <div>
         <Table tableTitle={tableTitle} notDataFound={!networks.length}>
