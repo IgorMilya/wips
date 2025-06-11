@@ -59,11 +59,17 @@ Moreover, you need to install wips server as well, [wisp-server](https://github.
 
 ## User Guidelines
 Open wips-ui.exe and navigate to the Scanner page
+
 ![image](https://github.com/user-attachments/assets/9cf4f2ad-5ac2-47b1-800e-43892f53a4ff)
+
 There, you can see your active network if you have a connection to wi-fi
+
 ![image](https://github.com/user-attachments/assets/32f34a2c-9ffa-4c73-a45a-732344836a49)
+
 and the scan button. Before clicking on the scan button, unfortunately, you need to first open Windows Wi-Fi Manager by clicking on the wi-fi icon in the bottom right corner and click on the arrow
+
 ![image](https://github.com/user-attachments/assets/274613e8-b9a4-4a33-b1f9-79a8f842d36b)
+
 ![image](https://github.com/user-attachments/assets/0090afea-82b8-4d0e-9197-cc13a9284d46)
 
 *Due to the limitation of the tool (netsh), it is not possible to scan the network and show everything what you have if you don't refresh the data from Windows Wi-Fi Manager. Netsh command only displays broadcasted SSIDs detected by the Windows WLAN AutoConfig service, and doesn't always include all nearby networks. It relies on Windows’ built-in scan results. Windows may cache scan results and throttle scanning for power and performance. This problem will be fixed using the **"windows"** crate library for Rust.*
