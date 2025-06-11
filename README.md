@@ -32,7 +32,7 @@ To install WIPS, follow these steps:
    ```bash
    npm install
    ```
-3. **Navigate to the Rust functional folder and install all dependencies form Cargo.toml **  
+3. **Navigate to the Rust functional folder and install all dependencies from Cargo.toml **  
    ```bash
    cd src-tauri
    cargo build
