@@ -18,8 +18,9 @@ const Scanner: FC = () => {
   const { data: blacklist = [] } = useGetBlacklistQuery()
   const { data: whitelist = [] } = useGetWhitelistQuery()
   const [activeRiskFilter, setActiveRiskFilter] = useState<string | null>(null)
-  console.log(localWhitelist)
-  console.log(localBlacklist)
+  const [isScanning, setIsScanning] = useState(false)
+
+
   const RISK_CHIPS = ['Critical', 'High', 'Medium', 'Low', 'Whitelisted']
   const riskKeywordMap: Record<string, string> = {
     critical: 'C',
@@ -31,9 +32,17 @@ const Scanner: FC = () => {
   }
 
   const scanWifi = async () => {
-    const result = await invoke<WifiNetworkType[]>('scan_wifi')
-    setNetworks(result)
+    try {
+      setIsScanning(true)
+      const result = await invoke<WifiNetworkType[]>('scan_wifi')
+      setNetworks(result)
+    } catch (error) {
+      console.error('Wi-Fi scan failed', error)
+    } finally {
+      setIsScanning(false)
+    }
   }
+
 
   const onToggle = (index: number) => setOpenIndex(openIndex === index ? null : index)
 
@@ -173,7 +182,9 @@ const Scanner: FC = () => {
         </div>
       }
       <div className="w-[100px] mb-5 mt-5">
-        <Button variant="secondary" onClick={scanWifi}>Scan</Button>
+        <Button variant="secondary" onClick={scanWifi}>
+          {isScanning ? 'Scanning...' : 'Scan'}
+        </Button>
       </div>
       <div className="mb-4">
         <input
