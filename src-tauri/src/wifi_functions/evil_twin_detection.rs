@@ -48,30 +48,23 @@ pub fn mark_evil_twins(networks: &mut Vec<WifiNetwork>) {
             let this_strength = encryption_strength(&net.authentication, &net.encryption);
 
             let mut suspicion_score = 0;
-            // println!("this_strength {} {}", this_strength, ssid);
-            // println!("strongest_strength {} {}", strongest_strength, ssid);
             if this_strength < strongest_strength {
                 suspicion_score += 2;
             }
 
             if let Ok(signal_strength) = net.signal.trim_end_matches('%').parse::<i32>() {
-                // println!("name stronger {} {}", signal_strength, ssid);
-                // println!("score stronger {}", suspicion_score);
                 if signal_strength > avg_signal + 20 {
                     suspicion_score += 2;
                 }
             }
 
             if let Ok(signal_strength) = net.signal.trim_end_matches('%').parse::<i32>() {
-                // println!("name weak {} {}", signal_strength, ssid);
-                // println!("score weak {}", suspicion_score);
                 if signal_strength + 20 < avg_signal {
                     suspicion_score += 1;
                 }
             }
 
-            // println!("Suspicion score name {}", ssid);
-            // println!("Suspicion score: {}", suspicion_score);
+
             if suspicion_score >= 3 {
                 net.is_evil_twin = true;
                 net.risk = "C".to_string();

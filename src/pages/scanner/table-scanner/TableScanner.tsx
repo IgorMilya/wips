@@ -22,6 +22,7 @@ const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, on
   const connectToWifi = async (ssid: string) => {
     setIsConnecting(true)
     try {
+
       const result = await invoke<string>('connect_wifi', {
         ssid,
         password: null,
@@ -29,14 +30,13 @@ const TableScanner: FC<TableScannerProps> = ({ data, isShowNetwork, onToggle, on
       })
       alert(result)
       onFetchActiveNetwork()
-      console.log("result", result)
     } catch (error: any) {
       const errMessage = typeof error === 'string' ? error : error.toString()
-      console.log("errMessage", errMessage)
 
       const shouldPrompt =
         errMessage.includes('Password may have changed') ||
         errMessage.includes('Password is required for new or failed networks.') ||
+        errMessage.includes('Password is required for secured networks.') ||
         errMessage.toLowerCase().includes('unable to connect')
 
       if (shouldPrompt) {

@@ -3,9 +3,14 @@ use std::io::Write;
 use std::process::Command;
 use std::thread;
 use std::time::Duration;
+use crate::wifi_functions::get_stored_profile_auth_encryption::get_stored_profile_auth_encryption;
 
 #[tauri::command]
-pub fn connect_wifi(ssid: String, password: Option<String>, authentication: Option<String>) -> Result<String, String> {
+pub fn connect_wifi(
+    ssid: String,
+    password: Option<String>,
+    authentication: Option<String>,
+) -> Result<String, String> {
     let is_open = authentication.as_deref() == Some("Open");
 
     let known_profiles_output = Command::new("netsh")
@@ -18,44 +23,72 @@ pub fn connect_wifi(ssid: String, password: Option<String>, authentication: Opti
         .lines()
         .any(|line| line.trim().starts_with("All User Profile") && line.contains(&ssid));
 
-    // Step 2: If known, try to connect first
-    if is_known {
-        let attempt = try_connect(&ssid)?;
-        if attempt.success {
-            return Ok(format!("Successfully connected to known network: {}", ssid));
-        }
 
-        // If known but connection failed, maybe due to wrong password
-        if password.is_none() {
-            return Err(format!(
-                "Connection to saved network '{}' failed. Password may have changed.",
-                ssid
-            ));
+    if is_known {
+        match get_stored_profile_auth_encryption(&ssid) {
+            Ok((stored_auth, stored_encryption)) => {
+                let current_auth = authentication.clone().unwrap_or_default();
+                let current_encryption = if is_open {
+                    "none".to_string()
+                } else {
+                    "AES".to_string()
+                };
+
+                let mismatch = !stored_auth.eq_ignore_ascii_case(&current_auth);
+
+                if mismatch {
+                    println!(
+                        "Profile mismatch detected. Stored: [{}, {}], Current: [{}, {}]. Deleting profile to recreate.",
+                        stored_auth, stored_encryption, current_auth, current_encryption
+                    );
+                    let _ = Command::new("netsh")
+                        .args(["wlan", "delete", "profile", &format!("name={}", ssid)])
+                        .output();
+                } else {
+                    let attempt = try_connect(&ssid)?;
+                    if attempt.success {
+                        return Ok(format!("Successfully connected to known network: {}", ssid));
+                    }
+
+                    if password.is_none() && !is_open {
+                        return Err(format!(
+                            "Connection to saved network '{}' failed. Password may have changed.",
+                            ssid
+                        ));
+                    }
+                }
+            }
+            Err(err) => {
+                println!(
+                    "Failed to get stored profile details for '{}': {}. Deleting profile as fallback.",
+                    ssid, err
+                );
+                let _ = Command::new("netsh")
+                    .args(["wlan", "delete", "profile", &format!("name={}", ssid)])
+                    .output();
+            }
         }
     }
 
-    // Step 3: If not known or previous connection failed, and password is provided
     let profile = if is_open {
         generate_open_profile_xml(&ssid)
     } else {
         let pass = password.ok_or_else(|| "Password is required for secured networks.".to_string())?;
         generate_profile_xml(&ssid, &pass)
     };
-    
+
     let path = std::env::temp_dir().join("wifi_profile.xml");
 
     let mut file = File::create(&path).map_err(|e| format!("Failed to create XML file: {}", e))?;
     file.write_all(profile.as_bytes())
         .map_err(|e| format!("Failed to write XML: {}", e))?;
 
-    // Remove old profile if it exists
     if is_known {
         let _ = Command::new("netsh")
             .args(["wlan", "delete", "profile", &format!("name={}", ssid)])
-            .output(); // Ignore result
+            .output();
     }
 
-    // Add the profile
     let add_output = Command::new("netsh")
         .args([
             "wlan",
@@ -80,7 +113,7 @@ pub fn connect_wifi(ssid: String, password: Option<String>, authentication: Opti
         Err(format!(
             "Failed to connect to '{}': {}",
             ssid,
-            connect.error.unwrap_or("Unknown error".to_string())
+            connect.error.unwrap_or_else(|| "Unknown error".to_string())
         ))
     }
 }
@@ -91,10 +124,8 @@ fn try_connect(ssid: &str) -> Result<ConnectResult, String> {
         .output()
         .map_err(|e| format!("Failed to execute netsh connect: {}", e))?;
 
-    // Wait a few seconds to let the connection process complete
     thread::sleep(Duration::from_secs(5));
 
-    // Check current connection status
     let status_output = Command::new("netsh")
         .args(["wlan", "show", "interfaces"])
         .output()
@@ -106,7 +137,7 @@ fn try_connect(ssid: &str) -> Result<ConnectResult, String> {
     let mut ssid_matched = false;
 
     for line in status_str.lines() {
-        let trimmed = line.trim().to_string();
+        let trimmed = line.trim();
         if trimmed.starts_with("State") {
             if let Some(state_value) = trimmed.split(':').nth(1) {
                 if state_value.trim().eq_ignore_ascii_case("connected") {
@@ -115,9 +146,7 @@ fn try_connect(ssid: &str) -> Result<ConnectResult, String> {
             }
         }
 
-        if line.trim().to_string().starts_with("SSID")
-            && line.trim().to_string().contains(&format!("{}", ssid))
-        {
+        if trimmed.starts_with("SSID") && trimmed.contains(ssid) {
             ssid_matched = true;
         }
     }
@@ -192,7 +221,6 @@ fn generate_open_profile_xml(ssid: &str) -> String {
 </WLANProfile>"#
     )
 }
-
 
 struct ConnectResult {
     success: bool,

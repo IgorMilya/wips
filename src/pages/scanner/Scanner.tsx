@@ -1,11 +1,11 @@
 import React, { FC, useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
+import { load } from '@tauri-apps/plugin-store'
 import { Button, Chip, Table } from 'UI'
 import { useGetBlacklistQuery, useGetWhitelistQuery } from 'store/api'
 import { WifiNetworkType } from 'types'
 import { TableScanner } from './table-scanner'
 import { tableTitle } from './scanner.utils'
-import { load } from '@tauri-apps/plugin-store'
 
 const Scanner: FC = () => {
   const [networks, setNetworks] = useState<WifiNetworkType[]>([])
@@ -18,7 +18,8 @@ const Scanner: FC = () => {
   const { data: blacklist = [] } = useGetBlacklistQuery()
   const { data: whitelist = [] } = useGetWhitelistQuery()
   const [activeRiskFilter, setActiveRiskFilter] = useState<string | null>(null)
-
+  console.log(localWhitelist)
+  console.log(localBlacklist)
   const RISK_CHIPS = ['Critical', 'High', 'Medium', 'Low', 'Whitelisted']
   const riskKeywordMap: Record<string, string> = {
     critical: 'C',
@@ -51,7 +52,6 @@ const Scanner: FC = () => {
     }
   }
 
-  // Sync backend whitelist to Tauri Store
   const syncWhitelistToStore = async () => {
     const store = await load('whitelist.json', { autoSave: false })
     const bssidList = whitelist.map(wl => wl.bssid.toLowerCase())
@@ -98,21 +98,21 @@ const Scanner: FC = () => {
     loadWhitelistFromStore()
     loadBlacklistFromStore()
     fetchActiveNetwork()
-    syncWhitelistToStore()
-    syncBlacklistToStore()
   }, [])
 
+
   useEffect(() => {
-    if (!!whitelist.length) {
+    if (whitelist.length > 0) {
       syncWhitelistToStore()
     }
   }, [whitelist])
 
   useEffect(() => {
-    if (!!blacklist.length) {
+    if (blacklist.length > 0) {
       syncBlacklistToStore()
     }
   }, [blacklist])
+
 
   const filterOnActiveNetwork = () => {
     const term = searchTerm.toLowerCase()
@@ -145,11 +145,10 @@ const Scanner: FC = () => {
   }
 
 
-
   return (
     <div className="p-5 w-full">
       <h1 className="font-bold text-[20px] mb-[10px]">Wireless Intrusion Prevention System</h1>
-      {!!activeNetwork &&
+      {!!activeNetwork?.ssid &&
         <div className="relative">
           <div onClick={onIsActive}
                className="bg-secondary text-white p-4 mb-4 rounded-t shadow flex justify-between items-center cursor-pointer">

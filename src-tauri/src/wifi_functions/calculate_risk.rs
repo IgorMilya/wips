@@ -1,7 +1,6 @@
 pub fn calculate_risk(authentication: &str, encryption: &str, signal: &str, ssid: &str) -> String {
     let mut score = 0;
 
-    // Authentication check
     score += match authentication {
         a if a.contains("WPA3") => 0,
         a if a.contains("WPA2") => 10,
@@ -10,7 +9,6 @@ pub fn calculate_risk(authentication: &str, encryption: &str, signal: &str, ssid
         _ => 30,
     };
 
-    // Encryption check
     score += match encryption {
         e if e.contains("CCMP") => 0,
         e if e.contains("TKIP") => 20,
@@ -18,7 +16,6 @@ pub fn calculate_risk(authentication: &str, encryption: &str, signal: &str, ssid
         _ => 10,
     };
 
-    // Signal strength (stronger = more suspicious in evil twin scenario)
     if let Ok(signal_strength) = signal.trim_end_matches('%').parse::<i32>() {
         score += match signal_strength {
             s if s > 80 => 20,
@@ -27,7 +24,6 @@ pub fn calculate_risk(authentication: &str, encryption: &str, signal: &str, ssid
         };
     }
 
-    // SSID Anomalies
     let lowercase_ssid = ssid.to_lowercase();
     if lowercase_ssid.contains("free")
         || lowercase_ssid.contains("xfinity")
@@ -35,7 +31,6 @@ pub fn calculate_risk(authentication: &str, encryption: &str, signal: &str, ssid
     {
         score += 30;
     }
-    // Total score classification
     match score {
         0..=39 => "L".to_string(),
         40..=69 => "M".to_string(),

@@ -6,6 +6,8 @@ mod parse_network_scan;
 mod scan_wifi;
 mod evil_twin_detection;
 mod parse_active_interface;
+mod trigger_scan;
+mod get_stored_profile_auth_encryption;
 
 pub use connect_wifi::connect_wifi;
 pub use disconnect_wifi::disconnect_wifi;
